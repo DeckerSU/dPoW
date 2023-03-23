@@ -13,6 +13,8 @@
  *                                                                            *
  ******************************************************************************/
 
+#include "../netstat.h"
+
 #define issue_curl(cmdstr) bitcoind_RPC(0,"curl",cmdstr,0,0,0,0)
 
 uint64_t dpow_utxosize(char *symbol)
@@ -66,6 +68,7 @@ char *bitcoind_getinfo(char *symbol,char *serverport,char *userpass,char *getinf
 cJSON *dpow_getinfo(struct supernet_info *myinfo,struct iguana_info *coin)
 {
     char buf[128],*retstr=0; cJSON *json = 0;
+    if (!coin) return 0;
     if ( coin->active == 0 ) return (0);
     if ( coin->FULLNODE < 0 )
     {
@@ -154,6 +157,7 @@ int32_t komodo_initjson(char *fname)
                     {
                         Notaries_elected[i][0] = clonestr(field);
                         Notaries_elected[i][1] = clonestr(hexstr);
+                        c_cnetworkstat_addnotary(field, hexstr);
                         //printf("%d of %d: %s %s\n",i,n,field,hexstr);
                     }
                     else

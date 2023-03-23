@@ -1368,4 +1368,9 @@ STRING_ARG(dex,explorer,symbol)
     return(clonestr("{\"error\":\"coin not active\"}"));
 }
 
+#include "netstat.h"
+ZERO_ARGS(dpow, netstat) {
+    return c_cnetworkstat_output();
+}
+
 #include "../includes/iguana_apiundefs.h"

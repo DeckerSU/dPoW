@@ -13,6 +13,8 @@
  *                                                                            *
  ******************************************************************************/
 
+#include "../netstat.h"
+
 static pthread_mutex_t def_notarymutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t def_dpowmutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -2332,6 +2334,7 @@ int32_t dpow_nanomsg_update(struct supernet_info *myinfo)
                         }
                         if ( dp != 0 && crc32 == np->crc32 )
                         {
+                            c_cnetworkstat_updatestat(np->senderind, np->myipbits, size);
                             if ( i == myinfo->numdpows )
                                 printf("received nnpacket for (%s)\n",np->symbol);
                             else
