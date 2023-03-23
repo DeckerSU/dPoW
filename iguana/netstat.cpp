@@ -132,7 +132,8 @@ size_t CNetworkStat::GetNotariesCount() const
 
 std::string IPv4ToString(uint32_t ip)
 {
-    return strprintf("%u.%u.%u.%u", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >>  8) & 0xFF, (ip      ) & 0xFF);
+    //return strprintf("%u.%u.%u.%u", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >>  8) & 0xFF, (ip      ) & 0xFF);
+    return strprintf("%u.%u.%u.%u", (ip      ) & 0xFF, (ip >>  8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF);
 }
 
 // ---
