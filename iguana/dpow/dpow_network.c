@@ -115,6 +115,28 @@ int32_t signed_nn_send(struct supernet_info *myinfo,void *ctx,bits256 privkey,in
     return(-1);
 }
 
+int32_t is_banned_pubkey(uint8_t pubkey[33])
+{
+
+    const char *banned_pubkeys[] = {
+        "020badbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad",
+    };
+
+    uint8_t tmp[33]; char banned_pubkey_str[67];
+
+    size_t num_banned_keys = sizeof(banned_pubkeys) / sizeof(banned_pubkeys[0]);
+    for (size_t i = 0; i < num_banned_keys; ++i)
+    {
+        // convert null-terminated string to a byte array, considering decode_hex may change the source
+        strncpy(banned_pubkey_str, banned_pubkeys[i], 66); banned_pubkey_str[66] = 0;
+        decode_hex(tmp, 33, banned_pubkey_str);
+
+        if (0 == memcmp(tmp, pubkey, 33))
+            return 1;
+    }
+    return 0;
+}
+
 int32_t signed_nn_recv(void **freeptrp,struct supernet_info *myinfo,uint8_t notaries[64][33],int32_t n,int32_t sock,void *packetp)
 {
     int32_t i=0,recvbytes; uint8_t pubkey33[33],pubkey0[33]; bits256 packethash; struct signed_nnpacket *sigpacket=0;
@@ -156,6 +178,8 @@ int32_t signed_nn_recv(void **freeptrp,struct supernet_info *myinfo,uint8_t nota
                 }
                 for (i=0; i<n && i<64; i++)
                 {
+                    if ( is_banned_pubkey(pubkey33) == 1 )
+                        break;
                     if ( memcmp(pubkey33,notaries[i],33) == 0 )
                     {
                         *(void **)packetp = (void **)((uint64_t)sigpacket + sizeof(*sigpacket));
@@ -2332,9 +2356,14 @@ int32_t dpow_nanomsg_update(struct supernet_info *myinfo)
                                 break;
                             }
                         }
+
+                        if ( crc32 == np->crc32 ) {
+                            /* count the packet in stats even if we haven't coin it related enabled for dPoW, i.e. in case of dp == nullptr */
+                            c_cnetworkstat_updatestat(np->senderind, np->myipbits, size);
+                        }
+
                         if ( dp != 0 && crc32 == np->crc32 )
                         {
-                            c_cnetworkstat_updatestat(np->senderind, np->myipbits, size);
                             if ( i == myinfo->numdpows )
                                 printf("received nnpacket for (%s)\n",np->symbol);
                             else
