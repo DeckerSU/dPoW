@@ -160,7 +160,7 @@ char *c_cnetworkstat_output() {
         cJSON *name = nullptr; cJSON *ips = nullptr; cJSON *ip = nullptr;
         cJSON *packets = nullptr; cJSON *bytes = nullptr;
         cJSON *init_time = nullptr; cJSON *last_packet_time = nullptr;
-        cJSON *last_pps = nullptr;
+        /* cJSON *last_pps = nullptr; */ cJSON *avg_pps = nullptr;
 
         value = cJSON_CreateString("success");
         if (value) {
@@ -180,9 +180,12 @@ char *c_cnetworkstat_output() {
                         bytes = cJSON_CreateNumber(nn.bytes);
                         init_time = cJSON_CreateString(FormatISO8601DateTime(nn.init_time/1000000).c_str());
                         last_packet_time = cJSON_CreateString(FormatISO8601DateTime(nn.last_packet_time/1000000).c_str());
-                        last_pps = cJSON_CreateNumber(nn.last_pps);
+                        // last_pps = cJSON_CreateNumber(nn.last_pps);
+                        int64_t total_time_elapsed_sec = (nn.last_packet_time - nn.init_time) / 1000000;
+                        double avg_pps_value = (nn.packets > 0) ? static_cast<double>(nn.packets) / total_time_elapsed_sec : 0;
+                        avg_pps = cJSON_CreateNumber(avg_pps_value);
 
-                        if (name && ips && packets && bytes && init_time && last_packet_time && last_pps) {
+                        if (name && ips && packets && bytes && init_time && last_packet_time && /* last_pps &&*/ avg_pps) {
                             cJSON_AddItemToObject(notary, "name", name);
                             cJSON_AddItemToObject(notary, "ips", ips);
 
@@ -198,7 +201,8 @@ char *c_cnetworkstat_output() {
                             cJSON_AddItemToObject(notary, "bytes", bytes);
                             cJSON_AddItemToObject(notary, "init_time", init_time);
                             cJSON_AddItemToObject(notary, "last_packet_time", last_packet_time);
-                            cJSON_AddItemToObject(notary, "last_pps", last_pps);
+                            // cJSON_AddItemToObject(notary, "last_pps", last_pps);
+                            cJSON_AddItemToObject(notary, "avg_pps", avg_pps);
 
                         }
                     }
