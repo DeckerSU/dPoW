@@ -576,7 +576,11 @@ HASH_AND_STRING(dpow,updatechaintip,blockhash,symbol)
     }
     else
     {
-        snprintf(buf, sizeof(buf), "{\"error\":\"cant do updatechaintip on an inactive coin\"}");
+        if (symbol[0] == '\0') {
+            snprintf(buf, sizeof(buf), "{\"error\":\"cant do updatechaintip on an inactive coin [nullptr]\"}");
+        } else {
+            snprintf(buf, sizeof(buf), "{\"error\":\"cant do updatechaintip on an inactive coin [%s]\"}", symbol);
+        }
     }
 
     return(clonestr(buf));
