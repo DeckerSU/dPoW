@@ -246,8 +246,6 @@ bits256 dpow_getbestblockhash(struct supernet_info *myinfo,struct iguana_info *c
         // if ( coin->lastbesthashtime+2 > time(NULL) && bits256_nonz(coin->lastbesthash) != 0 )
         //     return(coin->lastbesthash);
 
-        fprintf(stderr, "dpow_getbestblockhash: [%s]\n", coin->symbol);
-
         if ( (retstr= bitcoind_passthru(coin->symbol,coin->chain->serverport,coin->chain->userpass,"getbestblockhash","")) != 0 )
         {
             if ( is_hexstr(retstr,0) == sizeof(blockhash)*2 )
