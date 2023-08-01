@@ -782,7 +782,7 @@ void dpow_loop(void *arg)
 {
     RenameThread("dpow_loop");
     struct supernet_info *myinfo = arg; double startmilli,endmilli; 
-    int32_t counter = 0;
+    int32_t counter = 0; int32_t num;
     printf("start dpow loop\n");
     while ( 1 )
     {
@@ -793,14 +793,16 @@ void dpow_loop(void *arg)
         {
             if ( myinfo->numdpows == 1 )
             {
-                iguana_dPoWupdate(myinfo,myinfo->DPOWS[0]);
+                //iguana_dPoWupdate(myinfo,myinfo->DPOWS[0]);
+                num = dpow_nanomsg_update(myinfo);
                 endmilli = startmilli + 100;
             }
             else if ( myinfo->numdpows > 1 )
             {
-                iguana_dPoWupdate(myinfo,myinfo->DPOWS[counter % myinfo->numdpows]);
+                num = dpow_nanomsg_update(myinfo);
+                //iguana_dPoWupdate(myinfo,myinfo->DPOWS[counter % myinfo->numdpows]);
                 endmilli = startmilli + 20;
-                iguana_dPoWupdate(myinfo,myinfo->DPOWS[0]);
+                //iguana_dPoWupdate(myinfo,myinfo->DPOWS[0]);
             }
         }
         while ( OS_milliseconds() < endmilli )

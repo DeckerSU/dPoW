@@ -238,16 +238,23 @@ bits256 dpow_getbestblockhash(struct supernet_info *myinfo,struct iguana_info *c
     memset(blockhash.bytes,0,sizeof(blockhash));
     if ( coin->FULLNODE < 0 )
     {
-        if ( coin->lastbesthashtime+2 > time(NULL) && bits256_nonz(coin->lastbesthash) != 0 )
-            return(coin->lastbesthash);
+
+        /* remove 2 seconds gap. it's don't needed anymore, as iguana_dPoWupdate requested now only from updatechaintip,
+           i.e when getbestblockhash of src or dest coin is changed, so, there is shouldn't be bunch of useless calls
+           to getbestblockhash every few ms. */
+
+        // if ( coin->lastbesthashtime+2 > time(NULL) && bits256_nonz(coin->lastbesthash) != 0 )
+        //     return(coin->lastbesthash);
+
+        fprintf(stderr, "dpow_getbestblockhash: [%s]\n", coin->symbol);
+
         if ( (retstr= bitcoind_passthru(coin->symbol,coin->chain->serverport,coin->chain->userpass,"getbestblockhash","")) != 0 )
         {
-            if ( 0 && strcmp(coin->symbol,"USD") == 0 )
-                printf("%s getbestblockhash.(%s)\n",coin->symbol,retstr);
             if ( is_hexstr(retstr,0) == sizeof(blockhash)*2 )
                 decode_hex(blockhash.bytes,sizeof(blockhash),retstr);
             free(retstr);
         }
+
     }
     else if ( coin->FULLNODE > 0 || coin->VALIDATENODE > 0 )
     {
@@ -984,6 +991,7 @@ int32_t dpow_getchaintip(struct supernet_info *myinfo,bits256 *merklerootp,bits2
     *numtxp = *blocktimep = 0;
     oldhash = coin->lastbesthash;
     *blockhashp = besthash = dpow_getbestblockhash(myinfo,coin);
+
     if ( bits256_nonz(besthash) != 0 && bits256_cmp(oldhash,besthash) != 0 )
     {
         if ( (json= dpow_getblock(myinfo,coin,besthash)) != 0 )
@@ -1000,8 +1008,6 @@ int32_t dpow_getchaintip(struct supernet_info *myinfo,bits256 *merklerootp,bits2
                 {
                     for (i=0; i<n&&i<maxtx; i++)
                         txs[i] = jbits256i(array,i);
-                    if ( 0 && strcmp(coin->symbol,"USD") == 0 )
-                        printf("dpow_getchaintip %s ht.%d time.%u numtx.%d\n",coin->symbol,height,*blocktimep,n);
                     *numtxp = n;
                 }
             } else height = -1;

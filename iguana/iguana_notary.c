@@ -545,6 +545,44 @@ STRING_ARG(dpow,bindaddr,ipaddr)
     } else return(clonestr("{\"error\":\"no bind ipaddr\"}"));
 }
 
+HASH_AND_STRING(dpow,updatechaintip,blockhash,symbol)
+{
+    char str[65],buf[1024]; struct dpow_info *dp; struct iguana_info *ii_coin;
+
+    snprintf(buf, sizeof(buf), "{\"result\":\"success\"}");
+
+    for (int32_t i=0; i<myinfo->numdpows; ++i)
+    {
+        if ( strcmp(symbol,myinfo->DPOWS[i]->symbol) == 0 )
+        {
+            dp = myinfo->DPOWS[i];
+            break;
+        }
+    }
+
+    if ( dp != 0 )
+    {
+        /* this will be updated within dpow_getbestblockhash to prevent inserting values passed by the user into internal structures,
+           i.e. кegardless of what the user passes into updatechaintip as a blockhash, it will be re-requested from the daemon using
+           getbestblockhash */
+
+        // ii_coin = iguana_coinfind(dp->symbol);
+        // if ( bits256_nonz(blockhash) != 0 ) {
+        //     ii_coin->lastbesthash = blockhash;
+        //     ii_coin->lastbesthashtime = (uint32_t)time(NULL);
+        // }
+
+        iguana_dPoWupdate(myinfo, dp);
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "{\"error\":\"cant do updatechaintip on an inactive coin\"}");
+    }
+
+    return(clonestr(buf));
+}
+
+
 STRING_ARG(iguana,addnotary,ipaddr)
 {
     static int32_t didinit;
